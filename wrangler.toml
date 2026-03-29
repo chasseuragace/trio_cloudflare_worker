@@ -1,17 +1,17 @@
-name = "trio-booking-api"
+name = "trio-worker"
 main = "src/index.ts"
 compatibility_date = "2025-01-15"
 compatibility_flags = ["nodejs_compat"]
 
 [env.production]
-name = "trio-booking-api-prod"
+name = "trio-worker-prod"
 routes = [
   { pattern = "api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
 vars = { KAHA_TOKEN = "" }
 
 [env.staging]
-name = "trio-booking-api-staging"
+name = "trio-worker-staging"
 routes = [
   { pattern = "staging-api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
