@@ -20,17 +20,33 @@ interface Env {
   KAHA_TOKEN: string;
 }
 
-// CORS headers
+// CORS configuration
+const ALLOWED_ORIGINS = [
+  "https://chasseuragace.github.io",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && ALLOWED_ORIGINS.includes(origin);
+  return {
+    "Access-Control-Allow-Origin": isAllowed ? origin : "https://chasseuragace.github.io",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+// CORS headers (fallback)
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Origin": "https://chasseuragace.github.io",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Handle preflight requests
-function handleOptions(): Response {
+function handleOptions(origin: string | null): Response {
   return new Response(null, {
-    headers: corsHeaders,
+    headers: getCorsHeaders(origin),
   });
 }
 
@@ -113,6 +129,7 @@ async function proxyKahaAPI(
   request: Request,
   env: Env,
   pathname: string,
+  origin: string | null,
 ): Promise<Response> {
   try {
     // Extract the path after /api/kaha
@@ -145,7 +162,7 @@ async function proxyKahaAPI(
       statusText: response.statusText,
       headers: {
         ...Object.fromEntries(response.headers),
-        ...corsHeaders,
+        ...getCorsHeaders(origin),
       },
     });
   } catch (error) {
@@ -160,7 +177,7 @@ async function proxyKahaAPI(
         status: 502,
         headers: {
           "Content-Type": "application/json",
-          ...corsHeaders,
+          ...getCorsHeaders(origin),
         },
       },
     );
@@ -171,10 +188,11 @@ async function proxyKahaAPI(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const origin = request.headers.get("origin");
 
     // Handle CORS preflight
     if (request.method === "OPTIONS") {
-      return handleOptions();
+      return handleOptions(origin);
     }
 
     // Route: POST /api/bookings
@@ -193,7 +211,7 @@ export default {
           status: 200,
           headers: {
             "Content-Type": "application/json",
-            ...corsHeaders,
+            ...getCorsHeaders(origin),
           },
         },
       );
@@ -219,7 +237,7 @@ export default {
           status: 200,
           headers: {
             "Content-Type": "application/json",
-            ...corsHeaders,
+            ...getCorsHeaders(origin),
           },
         },
       );
@@ -228,7 +246,7 @@ export default {
     // Proxy routes for Kaha API
     // /api/kaha/* -> https://api.kaha.com.np/*
     if (url.pathname.startsWith("/api/kaha/")) {
-      return proxyKahaAPI(request, env, url.pathname);
+      return proxyKahaAPI(request, env, url.pathname, origin);
     }
 
     // 404 Not Found
@@ -241,7 +259,7 @@ export default {
         status: 404,
         headers: {
           "Content-Type": "application/json",
-          ...corsHeaders,
+          ...getCorsHeaders(origin),
         },
       },
     );
