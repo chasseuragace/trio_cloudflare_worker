@@ -17,7 +17,7 @@ interface Env {
   // Add your bindings here
   // DB?: D1Database;
   // CACHE?: KVNamespace;
-  KAHA_API_KEY: string;
+  KAHA_TOKEN: string;
 }
 
 // CORS headers
@@ -127,8 +127,8 @@ async function proxyKahaAPI(
     headers.delete("host");
 
     // Add Kaha API authentication
-    if (env.KAHA_API_KEY) {
-      headers.set("Authorization", `Bearer ${env.KAHA_API_KEY}`);
+    if (env.KAHA_TOKEN) {
+      headers.set("Authorization", `Bearer ${env.KAHA_TOKEN}`);
     }
 
     // Forward the request to Kaha API
@@ -201,9 +201,9 @@ export default {
 
     // Route: GET /api/config/status - Check if API key is configured
     if (url.pathname === "/api/config/status" && request.method === "GET") {
-      const hasApiKey = !!env.KAHA_API_KEY;
-      const keyPreview = hasApiKey 
-        ? `${env.KAHA_API_KEY.substring(0, 4)}...${env.KAHA_API_KEY.substring(env.KAHA_API_KEY.length - 4)}`
+      const hasToken = !!env.KAHA_TOKEN;
+      const tokenPreview = hasToken 
+        ? `${env.KAHA_TOKEN.substring(0, 4)}...${env.KAHA_TOKEN.substring(env.KAHA_TOKEN.length - 4)}`
         : "NOT_SET";
 
       return new Response(
@@ -211,8 +211,8 @@ export default {
           status: "ok",
           timestamp: new Date().toISOString(),
           config: {
-            kahaApiKeyConfigured: hasApiKey,
-            kahaApiKeyPreview: keyPreview,
+            kahaTokenConfigured: hasToken,
+            kahaTokenPreview: tokenPreview,
           },
         }),
         {
