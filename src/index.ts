@@ -17,7 +17,7 @@ interface Env {
   // Add your bindings here
   // DB?: D1Database;
   // CACHE?: KVNamespace;
-  KAHA_API_TOKEN?: string;
+  KAHA_API_KEY: string;
 }
 
 // CORS headers
@@ -125,6 +125,11 @@ async function proxyKahaAPI(
     // Build headers for the upstream request
     const headers = new Headers(request.headers);
     headers.delete("host");
+
+    // Add Kaha API authentication
+    if (env.KAHA_API_KEY) {
+      headers.set("Authorization", `Bearer ${env.KAHA_API_KEY}`);
+    }
 
     // Forward the request to Kaha API
     const response = await fetch(kahaUrl, {

@@ -8,12 +8,17 @@ name = "trio-booking-api-prod"
 routes = [
   { pattern = "api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
+vars = { KAHA_API_KEY = "" }
 
 [env.staging]
 name = "trio-booking-api-staging"
 routes = [
   { pattern = "staging-api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
+vars = { KAHA_API_KEY = "" }
+
+[env.development]
+vars = { KAHA_API_KEY = "" }
 
 # D1 Database binding (optional, for storing bookings)
 # [[d1_databases]]
