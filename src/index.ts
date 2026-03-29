@@ -6,7 +6,7 @@ const KAHA_API_BASE = "https://api.kaha.com.np";
 async function composeNarrative(
   bookingData: z.infer<typeof BookingFormSchema>,
   groqToken: string
-): Promise<string> {
+): Promise<string | null> {
   try {
     const prompt = `You are reporting to the Trio team about a new client inquiry. The Trio operates on these principles:
 - Clients know their domain, not the solution
@@ -32,7 +32,7 @@ Think like the Lead during knowledge crunching. Be direct. No fluff.`;
         Authorization: `Bearer ${groqToken}`,
       },
       body: JSON.stringify({
-        model: "mixtral-8x7b-32768",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "user",
@@ -41,16 +41,25 @@ Think like the Lead during knowledge crunching. Be direct. No fluff.`;
         ],
         temperature: 0.6,
         max_tokens: 200,
+        stream: false,
       }),
     });
 
     if (!response.ok) {
-      console.warn(`Groq API error: ${response.status}`);
+      const errorText = await response.text();
+      console.warn(`Groq API error: ${response.status} - ${errorText}`);
       return null;
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || null;
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.warn("No content in Groq response");
+      return null;
+    }
+    
+    return content.trim();
   } catch (error) {
     console.error("Error composing narrative with Groq:", error);
     return null;
