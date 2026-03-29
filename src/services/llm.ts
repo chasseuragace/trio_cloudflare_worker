@@ -56,7 +56,7 @@ Think like the Lead during knowledge crunching. Be direct. No fluff.`;
       return null;
     }
 
-    return content.trim();
+    return appendMetadata(content.trim(), bookingData);
   } catch (error) {
     console.error("Error composing narrative with Groq:", error);
     return null;
@@ -65,5 +65,20 @@ Think like the Lead during knowledge crunching. Be direct. No fluff.`;
 
 export function composeFallbackNarrative(bookingData: BookingForm): string {
   const org = bookingData.company ? ` at ${bookingData.company}` : "";
-  return `${bookingData.name}${org} is working on: "${bookingData.message}". Context appears sufficient for initial intake. Opportunity to clarify the job-to-be-done and validate the underlying need.`;
+  const narrative = `${bookingData.name}${org} is working on: "${bookingData.message}". Context appears sufficient for initial intake. Opportunity to clarify the job-to-be-done and validate the underlying need.`;
+  return appendMetadata(narrative, bookingData);
+}
+
+function appendMetadata(narrative: string, bookingData: BookingForm): string {
+  const metadata = [
+    `\n\n---`,
+    `Name: ${bookingData.name}`,
+    `Email: ${bookingData.email}`,
+    bookingData.company ? `Company: ${bookingData.company}` : null,
+    `Stage: ${bookingData.company || "Not specified"}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return narrative + metadata;
 }

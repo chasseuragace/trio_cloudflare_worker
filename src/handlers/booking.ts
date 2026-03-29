@@ -2,12 +2,13 @@ import { z } from "zod";
 import { BookingFormSchema, Env, ApiResponse } from "../types";
 import { composeNarrative, composeFallbackNarrative } from "../services/llm";
 import { createAsset } from "../services/kaha";
-import { corsHeaders } from "../utils/cors";
+import { getCorsHeaders } from "../utils/cors";
 
 export async function handleBooking(
   request: Request,
   env: Env
 ): Promise<Response> {
+  const origin = request.headers.get("origin");
   try {
     const body = await request.json();
 
@@ -50,7 +51,7 @@ export async function handleBooking(
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        ...corsHeaders,
+        ...getCorsHeaders(origin),
       },
     });
   } catch (error) {
@@ -65,7 +66,7 @@ export async function handleBooking(
           status: 400,
           headers: {
             "Content-Type": "application/json",
-            ...corsHeaders,
+            ...getCorsHeaders(origin),
           },
         }
       );
@@ -81,7 +82,7 @@ export async function handleBooking(
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          ...corsHeaders,
+          ...getCorsHeaders(origin),
         },
       }
     );

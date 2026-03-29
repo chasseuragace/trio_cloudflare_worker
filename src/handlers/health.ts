@@ -1,5 +1,5 @@
 import { Env, ApiResponse } from "../types";
-import { corsHeaders, getCorsHeaders } from "../utils/cors";
+import { getCorsHeaders } from "../utils/cors";
 
 export function handleHealth(origin: string | null): Response {
   const response: ApiResponse = {

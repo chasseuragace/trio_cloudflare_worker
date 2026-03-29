@@ -12,9 +12,3 @@ export function getCorsHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 }
-
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://chasseuragace.github.io",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
