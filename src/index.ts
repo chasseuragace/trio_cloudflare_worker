@@ -157,13 +157,23 @@ async function proxyKahaAPI(
 
     // Create a new response with CORS headers
     const responseBody = await response.text();
+    const responseHeaders = new Headers(response.headers);
+    
+    // Remove CORS headers from upstream response to avoid duplicates
+    responseHeaders.delete("access-control-allow-origin");
+    responseHeaders.delete("access-control-allow-methods");
+    responseHeaders.delete("access-control-allow-headers");
+    
+    // Add our CORS headers
+    const corsHeaders = getCorsHeaders(origin);
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      responseHeaders.set(key, value);
+    });
+
     return new Response(responseBody, {
       status: response.status,
       statusText: response.statusText,
-      headers: {
-        ...Object.fromEntries(response.headers),
-        ...getCorsHeaders(origin),
-      },
+      headers: responseHeaders,
     });
   } catch (error) {
     console.error("Proxy error:", error);
