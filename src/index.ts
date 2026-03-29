@@ -8,21 +8,22 @@ async function composeNarrative(
   groqToken: string
 ): Promise<string> {
   try {
-    const prompt = `You are a storyteller for a product development platform. Transform this booking inquiry into a compelling narrative that captures the client's context and needs.
+    const prompt = `You are reporting to the Trio team about a new client inquiry. The Trio operates on these principles:
+- Clients know their domain, not the solution
+- The stated requirement is a hypothesis, not the answer
+- Your job: extract the real need beneath what's stated
 
-Client Information:
-- Name: ${bookingData.name}
-- Email: ${bookingData.email}
-- Company/Project: ${bookingData.company || "Not specified"}
-- What they're working on: ${bookingData.message}
-- Stage: ${bookingData.message}
+Client Context:
+Name: ${bookingData.name}
+${bookingData.company ? `Organization: ${bookingData.company}` : ""}
+What they said: "${bookingData.message}"
 
-Create a brief, engaging narrative (2-3 sentences) that:
-1. Captures the essence of their problem/need
-2. Shows understanding of their context
-3. Positions this as a meaningful project opportunity
+Write 2-3 sentences that:
+1. Identify the job-to-be-done (not just what they asked for)
+2. Note if context is sufficient or if clarification is needed
+3. Frame the opportunity for the Trio
 
-Keep it professional but human. Focus on the story, not the form fields.`;
+Think like the Lead during knowledge crunching. Be direct. No fluff.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -38,8 +39,8 @@ Keep it professional but human. Focus on the story, not the form fields.`;
             content: prompt,
           },
         ],
-        temperature: 0.7,
-        max_tokens: 300,
+        temperature: 0.6,
+        max_tokens: 200,
       }),
     });
 
@@ -60,7 +61,8 @@ Keep it professional but human. Focus on the story, not the form fields.`;
 function composeFallbackNarrative(
   bookingData: z.infer<typeof BookingFormSchema>
 ): string {
-  return `${bookingData.name} from ${bookingData.company || "their organization"} is seeking assistance with their project. They're working on: "${bookingData.message}". This represents an opportunity to help refine their product development process.`;
+  const org = bookingData.company ? ` at ${bookingData.company}` : "";
+  return `${bookingData.name}${org} is working on: "${bookingData.message}". Context appears sufficient for initial intake. Opportunity to clarify the job-to-be-done and validate the underlying need.`;
 }
 
 // Booking form validation schema
