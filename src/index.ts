@@ -64,13 +64,39 @@ async function handleBooking(
       timestamp: new Date().toISOString(),
     });
 
-    // TODO: Store the booking data
-    // - Send to email service (e.g., SendGrid, Mailgun)
-    // - Store in D1 database
-    // - Log to analytics
-    // - Send webhook to external service
-
     console.log("Booking received:", validatedData);
+
+    // Create asset in Kaha API
+    const assetPayload = {
+      title: validatedData.name,
+      description: `Booking Request\n\nName: ${validatedData.name}\nEmail: ${validatedData.email}\nCompany: ${validatedData.company || "N/A"}\n\nMessage:\n${validatedData.message}\n\nReceived: ${validatedData.timestamp}`,
+      images: [],
+    };
+
+    try {
+      const kahaResponse = await fetch(
+        `${KAHA_API_BASE}/main/api/v3/asset`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.KAHA_TOKEN}`,
+          },
+          body: JSON.stringify(assetPayload),
+        }
+      );
+
+      if (!kahaResponse.ok) {
+        console.warn(
+          `Failed to create asset in Kaha: ${kahaResponse.status} ${kahaResponse.statusText}`
+        );
+      } else {
+        console.log("Asset created successfully in Kaha API");
+      }
+    } catch (kahaError) {
+      console.error("Error creating asset in Kaha:", kahaError);
+      // Don't fail the booking if asset creation fails
+    }
 
     return new Response(
       JSON.stringify({
