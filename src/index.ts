@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const KAHA_API_BASE = "https://api.kaha.com.np";
+
 // Booking form validation schema
 const BookingFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -15,6 +17,7 @@ interface Env {
   // Add your bindings here
   // DB?: D1Database;
   // CACHE?: KVNamespace;
+  KAHA_API_TOKEN?: string;
 }
 
 // CORS headers
@@ -105,6 +108,60 @@ async function handleBooking(
   }
 }
 
+// Proxy Kaha API requests
+async function proxyKahaAPI(
+  request: Request,
+  env: Env,
+  pathname: string,
+): Promise<Response> {
+  try {
+    // Extract the path after /api/kaha
+    const kahaPath = pathname.replace("/api/kaha", "");
+    const url = new URL(request.url);
+    const queryString = url.search;
+
+    const kahaUrl = `${KAHA_API_BASE}${kahaPath}${queryString}`;
+
+    // Build headers for the upstream request
+    const headers = new Headers(request.headers);
+    headers.delete("host");
+
+    // Forward the request to Kaha API
+    const response = await fetch(kahaUrl, {
+      method: request.method,
+      headers,
+      body: request.method !== "GET" && request.method !== "HEAD" ? await request.text() : undefined,
+    });
+
+    // Create a new response with CORS headers
+    const responseBody = await response.text();
+    return new Response(responseBody, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: {
+        ...Object.fromEntries(response.headers),
+        ...corsHeaders,
+      },
+    });
+  } catch (error) {
+    console.error("Proxy error:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Proxy request failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 502,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      },
+    );
+  }
+}
+
 // Main request handler
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -135,6 +192,12 @@ export default {
           },
         },
       );
+    }
+
+    // Proxy routes for Kaha API
+    // /api/kaha/* -> https://api.kaha.com.np/*
+    if (url.pathname.startsWith("/api/kaha/")) {
+      return proxyKahaAPI(request, env, url.pathname);
     }
 
     // 404 Not Found
