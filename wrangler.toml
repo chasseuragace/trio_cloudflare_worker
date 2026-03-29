@@ -1,0 +1,27 @@
+name = "trio-booking-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "trio-booking-api-prod"
+routes = [
+  { pattern = "api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
+]
+
+[env.staging]
+name = "trio-booking-api-staging"
+routes = [
+  { pattern = "staging-api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
+]
+
+# D1 Database binding (optional, for storing bookings)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "trio_bookings"
+# database_id = "your-database-id"
+
+# KV namespace binding (optional, for caching)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"
