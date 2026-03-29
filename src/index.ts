@@ -199,6 +199,32 @@ export default {
       );
     }
 
+    // Route: GET /api/config/status - Check if API key is configured
+    if (url.pathname === "/api/config/status" && request.method === "GET") {
+      const hasApiKey = !!env.KAHA_API_KEY;
+      const keyPreview = hasApiKey 
+        ? `${env.KAHA_API_KEY.substring(0, 4)}...${env.KAHA_API_KEY.substring(env.KAHA_API_KEY.length - 4)}`
+        : "NOT_SET";
+
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          timestamp: new Date().toISOString(),
+          config: {
+            kahaApiKeyConfigured: hasApiKey,
+            kahaApiKeyPreview: keyPreview,
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        },
+      );
+    }
+
     // Proxy routes for Kaha API
     // /api/kaha/* -> https://api.kaha.com.np/*
     if (url.pathname.startsWith("/api/kaha/")) {
