@@ -107,6 +107,47 @@ Health check endpoint.
 }
 ```
 
+## Kaha API Proxy
+
+All Kaha API endpoints are proxied through `/api/kaha/` prefix.
+
+### Available Endpoints
+
+**Assets:**
+- `POST /api/kaha/main/api/v3/asset` - Create asset
+- `GET /api/kaha/main/api/v3/asset` - List assets
+- `GET /api/kaha/main/api/v3/asset/my-business` - Get my business assets
+- `GET /api/kaha/main/api/v3/asset/business/{businessId}` - Get business assets
+- `GET /api/kaha/main/api/v3/asset/{id}` - Get asset by ID
+- `PATCH /api/kaha/main/api/v3/asset/{id}` - Update asset
+- `DELETE /api/kaha/main/api/v3/asset/{id}` - Delete asset
+
+### Example Usage
+
+```bash
+# Get assets
+curl https://trio-worker.chasseuragace.workers.dev/api/kaha/main/api/v3/asset
+
+# Get my business assets
+curl https://trio-worker.chasseuragace.workers.dev/api/kaha/main/api/v3/asset/my-business
+
+# Create asset
+curl -X POST https://trio-worker.chasseuragace.workers.dev/api/kaha/main/api/v3/asset \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Asset", ...}'
+```
+
+### Authentication
+
+If the Kaha API requires authentication, pass the Authorization header:
+
+```bash
+curl https://trio-worker.chasseuragace.workers.dev/api/kaha/main/api/v3/asset \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+The proxy will forward all headers to the upstream API.
+
 ## Configuration
 
 Edit `wrangler.toml` to configure:
