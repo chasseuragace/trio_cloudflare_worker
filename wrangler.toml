@@ -8,17 +8,17 @@ name = "trio-worker-prod"
 routes = [
   { pattern = "api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
-vars = { KAHA_TOKEN = "" }
+vars = { KAHA_TOKEN = "", GROQ_TOKEN = "" }
 
 [env.staging]
 name = "trio-worker-staging"
 routes = [
   { pattern = "staging-api.chasseuragace.com/api/*", zone_name = "chasseuragace.com" }
 ]
-vars = { KAHA_TOKEN = "" }
+vars = { KAHA_TOKEN = "", GROQ_TOKEN = "" }
 
 [env.development]
-vars = { KAHA_TOKEN = "" }
+vars = { KAHA_TOKEN = "", GROQ_TOKEN = "" }
 
 # D1 Database binding (optional, for storing bookings)
 # [[d1_databases]]

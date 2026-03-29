@@ -2,6 +2,67 @@ import { z } from "zod";
 
 const KAHA_API_BASE = "https://api.kaha.com.np";
 
+// Compose narrative using Groq LLM
+async function composeNarrative(
+  bookingData: z.infer<typeof BookingFormSchema>,
+  groqToken: string
+): Promise<string> {
+  try {
+    const prompt = `You are a storyteller for a product development platform. Transform this booking inquiry into a compelling narrative that captures the client's context and needs.
+
+Client Information:
+- Name: ${bookingData.name}
+- Email: ${bookingData.email}
+- Company/Project: ${bookingData.company || "Not specified"}
+- What they're working on: ${bookingData.message}
+- Stage: ${bookingData.message}
+
+Create a brief, engaging narrative (2-3 sentences) that:
+1. Captures the essence of their problem/need
+2. Shows understanding of their context
+3. Positions this as a meaningful project opportunity
+
+Keep it professional but human. Focus on the story, not the form fields.`;
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${groqToken}`,
+      },
+      body: JSON.stringify({
+        model: "mixtral-8x7b-32768",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn(`Groq API error: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch (error) {
+    console.error("Error composing narrative with Groq:", error);
+    return null;
+  }
+}
+
+// Fallback narrative composition
+function composeFallbackNarrative(
+  bookingData: z.infer<typeof BookingFormSchema>
+): string {
+  return `${bookingData.name} from ${bookingData.company || "their organization"} is seeking assistance with their project. They're working on: "${bookingData.message}". This represents an opportunity to help refine their product development process.`;
+}
+
 // Booking form validation schema
 const BookingFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -18,6 +79,7 @@ interface Env {
   // DB?: D1Database;
   // CACHE?: KVNamespace;
   KAHA_TOKEN: string;
+  GROQ_TOKEN: string;
 }
 
 // CORS configuration
@@ -66,10 +128,21 @@ async function handleBooking(
 
     console.log("Booking received:", validatedData);
 
+    // Compose narrative using Groq or fallback
+    let description = null;
+    if (env.GROQ_TOKEN) {
+      description = await composeNarrative(validatedData, env.GROQ_TOKEN);
+    }
+
+    // Fallback to simple narrative if Groq fails or token not available
+    if (!description) {
+      description = composeFallbackNarrative(validatedData);
+    }
+
     // Create asset in Kaha API
     const assetPayload = {
       title: validatedData.name,
-      description: `Booking Request\n\nName: ${validatedData.name}\nEmail: ${validatedData.email}\nCompany: ${validatedData.company || "N/A"}\n\nMessage:\n${validatedData.message}\n\nReceived: ${validatedData.timestamp}`,
+      description,
       images: [],
     };
 
