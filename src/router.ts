@@ -31,8 +31,8 @@ export async function router(
     return handleConfigStatus(env, origin);
   }
 
-  // Proxy routes for Kaha API
-  if (url.pathname.startsWith("/api/kaha/")) {
+  // Proxy routes for Kaha API (both /api/kaha/ and /api/proxy/ prefixes)
+  if (url.pathname.startsWith("/api/kaha/") || url.pathname.startsWith("/api/proxy/")) {
     return handleKahaProxy(request, env, url.pathname, origin);
   }
 

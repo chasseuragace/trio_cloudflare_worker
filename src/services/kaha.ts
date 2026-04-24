@@ -37,7 +37,14 @@ export async function proxyRequest(
   kahaToken: string
 ): Promise<Response> {
   try {
-    const kahaPath = pathname.replace("/api/kaha", "");
+    // Handle both /api/kaha and /api/proxy prefixes
+    let kahaPath = pathname;
+    if (kahaPath.startsWith("/api/kaha")) {
+      kahaPath = kahaPath.replace("/api/kaha", "");
+    } else if (kahaPath.startsWith("/api/proxy")) {
+      kahaPath = kahaPath.replace("/api/proxy", "");
+    }
+    
     const url = new URL(request.url);
     const queryString = url.search;
 
