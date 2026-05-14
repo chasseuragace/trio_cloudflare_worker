@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BookingFormSchema, Env, ApiResponse } from "../types";
 import { composeNarrative, composeFallbackNarrative } from "../services/llm";
-import { createAsset } from "../services/kaha";
+import { createAssetInFirebase } from "../services/firebase";
 import { getCorsHeaders } from "../utils/cors";
 
 export async function handleBooking(
@@ -10,7 +10,7 @@ export async function handleBooking(
 ): Promise<Response> {
   const origin = request.headers.get("origin");
   try {
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
 
     const validatedData = BookingFormSchema.parse({
       ...body,
@@ -29,14 +29,14 @@ export async function handleBooking(
       description = composeFallbackNarrative(validatedData);
     }
 
-    // Create asset in Kaha API
+    // Create asset in Firebase
     const assetPayload = {
       title: validatedData.name,
       description,
       images: [],
     };
 
-    await createAsset(assetPayload, env.KAHA_TOKEN);
+    await createAssetInFirebase(assetPayload);
 
     const response: ApiResponse = {
       success: true,

@@ -1,7 +1,6 @@
 import { Env, ApiResponse } from "./types";
 import { handleBooking } from "./handlers/booking";
 import { handleHealth, handleConfigStatus, handleOptions } from "./handlers/health";
-import { handleKahaProxy } from "./handlers/proxy";
 import { getCorsHeaders } from "./utils/cors";
 
 export async function router(
@@ -29,11 +28,6 @@ export async function router(
   // Route: GET /api/config/status
   if (url.pathname === "/api/config/status" && request.method === "GET") {
     return handleConfigStatus(env, origin);
-  }
-
-  // Proxy routes for Kaha API (both /api/kaha/ and /api/proxy/ prefixes)
-  if (url.pathname.startsWith("/api/kaha/") || url.pathname.startsWith("/api/proxy/")) {
-    return handleKahaProxy(request, env, url.pathname, origin);
   }
 
   // 404 Not Found

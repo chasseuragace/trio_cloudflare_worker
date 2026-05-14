@@ -48,7 +48,7 @@ Think like the Lead during knowledge crunching. Be direct. No fluff.`;
       return null;
     }
 
-    const data = await response.json();
+    const data = await response.json() as { choices?: { message?: { content?: string } }[] };
     const content = data.choices?.[0]?.message?.content;
 
     if (!content) {
